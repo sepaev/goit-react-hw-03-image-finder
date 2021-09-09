@@ -9,21 +9,29 @@ import {
 // import { FaBeer } from 'react-icons/fa';
 
 class SearchBar extends Component {
-  onSubmit = e => {
-    e.preventDefault();
-    const inputRef = e.target.elements[1];
-    const query = inputRef.value.trim();
-    if (!query) return;
+  state = {
+    query: '',
+  };
 
-    this.props.doSearch(query);
-    this.setState({ query });
-    inputRef.value = '';
+  handleQueryChange = e => {
+    this.setState({ query: e.currentTarget.value.toLowerCase() });
+  };
+
+  handleSubmit = e => {
+    e.preventDefault();
+    const query = this.state.query.trim();
+    if (!query) {
+      alert('введите название картинки');
+      return;
+    }
+    this.props.onSubmit(query);
+    this.setState({ query: '' });
   };
 
   render() {
     return (
       <SearchBarHeader>
-        <SearchForm onSubmit={this.onSubmit}>
+        <SearchForm onSubmit={this.handleSubmit}>
           <SearchButton type='submit'>
             <SearchButtonSpan>Search</SearchButtonSpan>
           </SearchButton>
@@ -32,8 +40,11 @@ class SearchBar extends Component {
             className='SearchForm-input'
             type='text'
             autocomplete='off'
+            name='pictureName'
             autoFocus
             placeholder='Search images and photos'
+            value={this.state.query}
+            onChange={this.handleQueryChange}
           />
         </SearchForm>
       </SearchBarHeader>
