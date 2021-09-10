@@ -12,11 +12,59 @@ import {
   PER_PAGE,
 } from '../../constants/constants';
 import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem';
+import Modal from '../Modal/Modal';
 axios.defaults.baseURL = `${API_URL}`;
 
 class ImageGallery extends Component {
-  state = { pages: 0, total: 0, hits: null, query: '', newRequest: true, page: 1, error: null };
+  state = {
+    pages: 0,
+    total: 0,
+    hits: null,
+    query: '',
+    newRequest: true,
+    page: 1,
+    error: null,
+    modalIsOpen: false,
+    modalImages: null,
+  };
 
+  toggleModal = e => {
+    if (e) {
+      e.preventDefault();
+      const currentId = e.target.id;
+      const images = this.getNeighbors(currentId);
+      this.setState(prevState => {
+        return { modalIsOpen: !prevState.modalIsOpen, modalImages: images };
+      });
+    } else {
+      this.setState(prevState => {
+        return { modalIsOpen: !prevState.modalIsOpen, modalImages: null };
+      });
+    }
+  };
+
+  changeNeighbors = id => {
+    const images = this.getNeighbors(id);
+    this.setState(prevState => {
+      return { modalImages: images };
+    });
+  };
+  getNeighbors = id => {
+    console.log(id);
+    if (this.state.hits) {
+      const hits = this.state.hits;
+      for (let i = 0; i < hits.length; i++) {
+        if (hits[i].id.toString() === id.toString()) {
+          console.log(hits[i].id + ' - ' + id);
+          const prev = i === 0 ? hits[hits.length - 1].id : hits[i - 1];
+          const next = i === hits.length - 1 ? hits[0].id : hits[i + 1];
+          const curr = hits[i];
+          return { prev, curr, next };
+        }
+      }
+    }
+    return null;
+  };
   getOptions(query) {
     return {
       key: API_KEY,
@@ -69,11 +117,12 @@ class ImageGallery extends Component {
       newRequest: newRequest,
       page: 1,
       error: null,
+      modalIsOpen: false,
     };
   };
   loadMore = () => {
     const nextPage = this.state.page + 1;
-    if (nextPage > this.state.pages) alert('no more pages');
+    // if (nextPage > this.state.pages) alert('no more pages');
     this.setState({ page: nextPage, newRequest: true });
   };
 
@@ -128,12 +177,27 @@ class ImageGallery extends Component {
       <>
         <ImageGalleryUl>
           {hits !== null &&
-            hits.map(({ id, webformatURL, tags }) => {
-              return <ImageGalleryItem key={uuidv4()} id={id} src={webformatURL} alt={tags} />;
+            hits.map(({ id, webformatURL, largeImageURL, tags }) => {
+              return (
+                <ImageGalleryItem
+                  key={uuidv4()}
+                  id={id}
+                  src={webformatURL}
+                  alt={tags}
+                  onClick={this.toggleModal}
+                />
+              );
             })}
         </ImageGalleryUl>
-        {this.state.total > PER_PAGE && (
+        {this.state.pages > this.state.page && (
           <Button title={`load more ${PER_PAGE} pictures`} onClick={this.loadMore} />
+        )}
+        {this.state.modalIsOpen && (
+          <Modal
+            modalImages={this.state.modalImages}
+            exitFunc={this.toggleModal}
+            changeNeighbors={this.changeNeighbors}
+          />
         )}
       </>
     );

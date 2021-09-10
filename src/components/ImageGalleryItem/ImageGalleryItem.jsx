@@ -2,8 +2,8 @@ import { ImageGalleryItemImg, ImageGalleryItemLi } from './ImageGalleryItem.styl
 
 const ImageGalleryItem = ({ id, src, alt, onClick }) => {
   return (
-    <ImageGalleryItemLi key={id}>
-      <ImageGalleryItemImg src={src} alt={alt} loading='lazy' onClick={onClick} />
+    <ImageGalleryItemLi>
+      <ImageGalleryItemImg src={src} alt={alt} id={id} loading='lazy' onClick={onClick} />
     </ImageGalleryItemLi>
   );
 };
