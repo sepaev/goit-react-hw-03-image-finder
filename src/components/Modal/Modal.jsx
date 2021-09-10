@@ -17,11 +17,13 @@ class Modal extends Component {
   componentWillUnmount() {
     window.removeEventListener('keydown', this.onTapped);
   }
-
+  onClickModal = e => {
+    if (e.target.nodeName === 'DIV') this.props.exitFunc();
+  };
   render() {
     const { curr } = this.props.modalImages;
     return (
-      <OverlayDiv>
+      <OverlayDiv onClick={this.onClickModal}>
         <ModalDiv>
           <ModalImg src={curr.largeImageURL} alt={curr.tags} />
         </ModalDiv>

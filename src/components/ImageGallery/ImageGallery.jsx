@@ -56,8 +56,8 @@ class ImageGallery extends Component {
       for (let i = 0; i < hits.length; i++) {
         if (hits[i].id.toString() === id.toString()) {
           console.log(hits[i].id + ' - ' + id);
-          const prev = i === 0 ? hits[hits.length - 1].id : hits[i - 1];
-          const next = i === hits.length - 1 ? hits[0].id : hits[i + 1];
+          const prev = i === 0 ? hits[hits.length - 1] : hits[i - 1];
+          const next = i === hits.length - 1 ? hits[0] : hits[i + 1];
           const curr = hits[i];
           return { prev, curr, next };
         }
