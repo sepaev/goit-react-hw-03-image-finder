@@ -25,7 +25,7 @@ class Modal extends Component {
     return (
       <OverlayDiv onClick={this.onClickModal}>
         <ModalDiv>
-          <ModalImg src={curr.largeImageURL} alt={curr.tags} />
+          <ModalImg src={curr.largeImageURL} alt={curr.tags} loading='lazy' />
         </ModalDiv>
       </OverlayDiv>
     );
