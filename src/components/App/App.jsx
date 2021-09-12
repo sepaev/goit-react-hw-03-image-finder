@@ -1,5 +1,6 @@
 import SearchBar from '../SearchBar/SearchBar';
 import ImageGallery from '../ImageGallery/ImageGallery';
+import Loader from '../Loader/Loader';
 import { AppSection, InfoDiv, InfoH1 } from './App.styled';
 import { Component } from 'react';
 
@@ -32,7 +33,7 @@ class App extends Component {
         )}
         <ImageGallery query={query} changeStatus={this.changeStatus} />
         {this.state.status === 'rejected' && <InfoDiv>Error</InfoDiv>}
-        {this.state.status === 'pending' && <InfoDiv>Searching for a {query}...</InfoDiv>}
+        {this.state.status === 'pending' && <Loader query={query} />}
       </AppSection>
     );
   }

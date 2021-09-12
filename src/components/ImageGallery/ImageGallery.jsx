@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { Component } from 'react';
 import { ImageGalleryUl } from './ImageGallery.styled';
 import Button from '../Button/Button';
@@ -50,12 +51,10 @@ class ImageGallery extends Component {
     });
   };
   getNeighbors = id => {
-    console.log(id);
     if (this.state.hits) {
       const hits = this.state.hits;
       for (let i = 0; i < hits.length; i++) {
         if (hits[i].id.toString() === id.toString()) {
-          console.log(hits[i].id + ' - ' + id);
           const prev = i === 0 ? hits[hits.length - 1] : hits[i - 1];
           const next = i === hits.length - 1 ? hits[0] : hits[i + 1];
           const curr = hits[i];
@@ -205,3 +204,8 @@ class ImageGallery extends Component {
 }
 
 export default ImageGallery;
+
+ImageGallery.propTypes = {
+  query: PropTypes.string.isRequired,
+  changeStatus: PropTypes.func.isRequired,
+};
