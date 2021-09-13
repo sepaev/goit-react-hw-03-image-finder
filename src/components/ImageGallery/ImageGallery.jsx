@@ -2,11 +2,10 @@ import PropTypes from 'prop-types';
 import { Component } from 'react';
 import { ImageGalleryUl } from './ImageGallery.styled';
 import { v4 as uuidv4 } from 'uuid';
-import api from '../../services/api';
+import { api, perPage } from '../../services/api';
 import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem';
 import Modal from '../Modal/Modal';
 import Button from '../Button/Button';
-import { API_PARAMS } from '../../constants/constants';
 import 'react-toastify/dist/ReactToastify.css';
 
 class ImageGallery extends Component {
@@ -55,16 +54,11 @@ class ImageGallery extends Component {
   };
 
   getResponse = async (query, page) => {
-    const { key, imageType, orientation, perPage } = API_PARAMS;
     try {
       const response = await api.get(`/`, {
         params: {
           q: query,
           page,
-          key,
-          image_type: imageType,
-          orientation: orientation,
-          per_page: perPage,
         },
       });
       if (response.status === 200) {
@@ -99,7 +93,6 @@ class ImageGallery extends Component {
     //если новый запрос
     if (readyForResponse || propsQuery !== query) {
       doChangeStatus('pending');
-      const perPage = API_PARAMS.perPage;
       const newState = await this.getResponse(propsQuery, page)
         .then(response => response.data)
         .then(({ total, hits, error }) => {
@@ -168,7 +161,7 @@ class ImageGallery extends Component {
             })}
         </ImageGalleryUl>
         {this.state.response.pages > this.state.page && (
-          <Button title={`load more ${API_PARAMS.perPage} pictures`} onClick={this.loadMore} />
+          <Button title={`load more ${perPage} pictures`} onClick={this.loadMore} />
         )}
         {this.state.modalIsOpen && (
           <Modal

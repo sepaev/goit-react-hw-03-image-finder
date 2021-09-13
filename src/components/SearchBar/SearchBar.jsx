@@ -2,7 +2,7 @@ import { PropTypes } from 'prop-types';
 import { Component } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { TOAST_OPTIONS } from '../../constants/constants';
+import toastOptions from '../../options/toast';
 import {
   SearchBarHeader,
   SearchForm,
@@ -25,7 +25,7 @@ class SearchBar extends Component {
     const query = this.state.query.trim();
 
     if (!query) {
-      toast.error(`Please input search value.`, TOAST_OPTIONS);
+      toast.error(`Please input search value.`, toastOptions);
       return;
     }
     this.props.onSubmit(query);

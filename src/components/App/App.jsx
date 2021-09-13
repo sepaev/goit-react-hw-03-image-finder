@@ -4,7 +4,7 @@ import Loader from '../Loader/Loader';
 import { AppSection, InfoDiv, InfoH1 } from './App.styled';
 import { Component } from 'react';
 import { toast } from 'react-toastify';
-import { TOAST_OPTIONS } from '../../constants/constants';
+import toastOptions from '../../options/toast';
 
 class App extends Component {
   state = {
@@ -22,7 +22,7 @@ class App extends Component {
     if (status !== newStatus) {
       if (message !== '') {
         if (lastMessage !== message) {
-          toast.info(message, TOAST_OPTIONS);
+          toast.info(message, toastOptions);
         }
         this.setState({ status: newStatus, lastMessage: message });
       } else {
