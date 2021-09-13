@@ -1,5 +1,7 @@
 import { PropTypes } from 'prop-types';
 import { Component } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import {
   SearchBarHeader,
   SearchForm,
@@ -7,13 +9,21 @@ import {
   SearchButtonSpan,
   SearchInput,
 } from './SearchBar.styled';
-// import { FaBeer } from 'react-icons/fa';
 
 class SearchBar extends Component {
   state = {
     query: '',
   };
 
+  toastOptions = {
+    position: 'top-right',
+    autoClose: 3000,
+    hideProgressBar: true,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  };
   handleQueryChange = e => {
     this.setState({ query: e.currentTarget.value.toLowerCase() });
   };
@@ -21,8 +31,9 @@ class SearchBar extends Component {
   handleSubmit = e => {
     e.preventDefault();
     const query = this.state.query.trim();
+
     if (!query) {
-      alert('введите название картинки');
+      toast.error(`Please input search value.`, this.toastOptions);
       return;
     }
     this.props.onSubmit(query);
@@ -47,6 +58,7 @@ class SearchBar extends Component {
             value={this.state.query}
             onChange={this.handleQueryChange}
           />
+          <ToastContainer />
         </SearchForm>
       </SearchBarHeader>
     );

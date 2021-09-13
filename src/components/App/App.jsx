@@ -3,20 +3,40 @@ import ImageGallery from '../ImageGallery/ImageGallery';
 import Loader from '../Loader/Loader';
 import { AppSection, InfoDiv, InfoH1 } from './App.styled';
 import { Component } from 'react';
+import { toast } from 'react-toastify';
 
 class App extends Component {
   state = {
     status: 'idle',
     query: '',
+    lastMessage: '',
   };
 
   handleFormSubmit = query => {
     this.setState({ status: 'resolved', query });
   };
 
-  changeStatus = newStatus => {
-    if (this.state.status !== newStatus) {
-      this.setState({ status: newStatus });
+  toastOptions = {
+    position: 'top-right',
+    autoClose: 3000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  };
+
+  changeStatus = (newStatus, message = '') => {
+    const { status, lastMessage } = this.state;
+    if (status !== newStatus) {
+      if (message !== '') {
+        if (lastMessage !== message) {
+          toast.info(message, this.toastOptions);
+        }
+        this.setState({ status: newStatus, lastMessage: message });
+      } else {
+        this.setState({ status: newStatus });
+      }
     }
   };
 
@@ -32,7 +52,7 @@ class App extends Component {
           </InfoDiv>
         )}
         <ImageGallery query={query} changeStatus={this.changeStatus} />
-        {this.state.status === 'rejected' && <InfoDiv>Error</InfoDiv>}
+        {this.state.status === 'rejected' && <InfoDiv>{this.state.lastMessage}</InfoDiv>}
         {this.state.status === 'pending' && <Loader query={query} />}
       </AppSection>
     );

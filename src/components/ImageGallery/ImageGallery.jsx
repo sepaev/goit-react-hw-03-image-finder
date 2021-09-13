@@ -1,28 +1,19 @@
 import PropTypes from 'prop-types';
 import { Component } from 'react';
 import { ImageGalleryUl } from './ImageGallery.styled';
-import Button from '../Button/Button';
-import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  API_KEY,
-  API_URL,
-  IMAGE_TYPE,
-  ORIENTATION,
-  SAFESEARCH,
-  PER_PAGE,
-} from '../../constants/constants';
+import api from '../../services/api';
 import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem';
 import Modal from '../Modal/Modal';
-axios.defaults.baseURL = `${API_URL}`;
+import Button from '../Button/Button';
+import { API_PARAMS } from '../../constants/constants';
+import 'react-toastify/dist/ReactToastify.css';
 
 class ImageGallery extends Component {
   state = {
-    pages: 0,
-    total: 0,
-    hits: null,
+    response: { pages: 0, total: 0, hits: null },
     query: '',
-    newRequest: true,
+    readyForResponse: true,
     page: 1,
     error: null,
     modalIsOpen: false,
@@ -46,13 +37,12 @@ class ImageGallery extends Component {
 
   changeNeighbors = id => {
     const images = this.getNeighbors(id);
-    this.setState(prevState => {
-      return { modalImages: images };
-    });
+    this.setState({ modalImages: images });
   };
+
   getNeighbors = id => {
-    if (this.state.hits) {
-      const hits = this.state.hits;
+    const { hits } = this.state.response;
+    if (hits) {
       for (let i = 0; i < hits.length; i++) {
         if (hits[i].id.toString() === id.toString()) {
           const prev = i === 0 ? hits[hits.length - 1] : hits[i - 1];
@@ -64,103 +54,94 @@ class ImageGallery extends Component {
     }
     return null;
   };
-  getOptions(query) {
-    return {
-      key: API_KEY,
-      q: query,
-      image_type: IMAGE_TYPE,
-      orientation: ORIENTATION,
-      safesearch: SAFESEARCH,
-      per_page: PER_PAGE,
-      page: this.state.page,
-    };
-  }
-  getStringOptions = query => {
-    const options = this.getOptions(query);
-    const { key, q, image_type, orientation, safesearch, per_page, page } = options;
-    if (!key || !q) return '';
 
-    let stringOptions = '?';
-    stringOptions += 'key=' + key;
-    stringOptions += '&q=' + q;
-    if (image_type) stringOptions += '&image_type=' + image_type;
-    if (orientation) stringOptions += '&orientation=' + orientation;
-    if (safesearch) stringOptions += '&safesearch=' + safesearch;
-    if (per_page) stringOptions += '&per_page=' + per_page;
-    if (page) stringOptions += '&page=' + page;
-
-    return stringOptions;
-  };
-
-  getResponse = async query => {
-    const options = this.getStringOptions(query);
+  getResponse = async (query, page = this.state.page) => {
+    const { key, imageType, orientation, perPage } = API_PARAMS;
     try {
-      const response = await axios.get(options);
+      const response = await api.get(`/`, {
+        params: {
+          q: query,
+          page,
+          key,
+          image_type: imageType,
+          orientation: orientation,
+          per_page: perPage,
+        },
+      });
       if (response.status === 200) {
         return response;
       } else {
-        return Promise.reject(new Error('Error - ' + response.status));
+        throw new Error('Error - ' + response.status);
       }
     } catch (error) {
-      console.log(error);
-      // this.updateState(error, 'rejected');
+      return { data: { total: 0, hits: [], error } };
     }
   };
 
-  getClearStateObject = (query, newRequest = false) => {
+  getClearStateObject = (query, readyForResponse = false) => {
     return {
-      pages: 0,
-      total: 0,
-      hits: null,
+      response: { pages: 0, total: 0, hits: null },
       query: query,
-      newRequest: newRequest,
+      readyForResponse: readyForResponse,
       page: 1,
       error: null,
       modalIsOpen: false,
     };
   };
   loadMore = () => {
-    const nextPage = this.state.page + 1;
-    // if (nextPage > this.state.pages) alert('no more pages');
-    this.setState({ page: nextPage, newRequest: true });
+    this.setState({ page: this.state.page + 1, readyForResponse: true });
   };
 
   componentDidUpdate = async (prevProps, prevState) => {
     const propsQuery = this.props.query;
     const doChangeStatus = this.props.changeStatus;
-    const { query, newRequest, page } = this.state;
+    const { query, readyForResponse, page } = this.state;
 
-    if (propsQuery !== query && newRequest === false) {
-      this.setState(this.getClearStateObject(propsQuery, true));
-      return;
-    }
     //если новый запрос
-    if (newRequest) {
+    if (readyForResponse || propsQuery !== query) {
       doChangeStatus('pending');
+      const perPage = API_PARAMS.perPage;
       const newState = await this.getResponse(propsQuery)
         .then(response => response.data)
-        .then(({ total, hits }) => {
+        .then(({ total, hits, error }) => {
           if (total > 0) {
             //найдено картинки
-            doChangeStatus('resolved');
-            const pages = total % PER_PAGE > 0 ? parseInt(total / PER_PAGE) + 1 : total / PER_PAGE;
+            const pages = total % perPage > 0 ? parseInt(total / perPage) + 1 : total / perPage;
+            let prevHits;
+            if (propsQuery !== query) {
+              prevHits = null;
+              doChangeStatus('resolved', `Was found ${total} results. Avaliable ${pages} pages!`);
+            } else {
+              prevHits = prevState.response.hits;
+              doChangeStatus(
+                'resolved',
+                `Added more ${perPage} pictures! Current page ${page} of  ${pages} pages.`,
+              );
+            }
             return {
-              pages,
-              total,
-              hits: prevState.hits ? [...prevState.hits, ...hits] : [...hits],
+              response: {
+                pages,
+                total,
+                hits: prevHits ? [...prevHits, ...hits] : [...hits],
+              },
               query: propsQuery,
-              newRequest: false,
+              readyForResponse: false,
               page,
               error: null,
             };
           }
-          //не найдено картинки
-          doChangeStatus('idle');
+          if (error) {
+            //есть ошибка
+            console.dir(error.message);
+            doChangeStatus('rejected', error.message);
+          } else {
+            //не найдено картинки
+            doChangeStatus('idle', `Please, start new search.`);
+          }
           return this.getClearStateObject(propsQuery, false);
         });
       //запись в стейт нового обьекта
       this.setState(newState);
-      // if (this.state.total > PER_PAGE) {
       window.setTimeout(e => {
         window.scrollTo({
           top: document.documentElement.scrollHeight,
@@ -171,12 +152,12 @@ class ImageGallery extends Component {
   };
 
   render() {
-    const { hits } = this.state;
+    const { hits } = this.state.response;
     return (
       <>
         <ImageGalleryUl>
           {hits !== null &&
-            hits.map(({ id, webformatURL, largeImageURL, tags }) => {
+            hits.map(({ id, webformatURL, tags }) => {
               return (
                 <ImageGalleryItem
                   key={uuidv4()}
@@ -188,8 +169,8 @@ class ImageGallery extends Component {
               );
             })}
         </ImageGalleryUl>
-        {this.state.pages > this.state.page && (
-          <Button title={`load more ${PER_PAGE} pictures`} onClick={this.loadMore} />
+        {this.state.response.pages > this.state.page && (
+          <Button title={`load more ${API_PARAMS.perPage} pictures`} onClick={this.loadMore} />
         )}
         {this.state.modalIsOpen && (
           <Modal
