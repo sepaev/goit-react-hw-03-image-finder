@@ -15,9 +15,8 @@ class ImageGallery extends Component {
     query: '',
     readyForResponse: true,
     page: 1,
-    error: null,
     modalIsOpen: false,
-    modalImages: null,
+    modalNeighbors: null,
   };
 
   toggleModal = e => {
@@ -26,18 +25,18 @@ class ImageGallery extends Component {
       const currentId = e.target.id;
       const images = this.getNeighbors(currentId);
       this.setState(prevState => {
-        return { modalIsOpen: !prevState.modalIsOpen, modalImages: images };
+        return { modalIsOpen: !prevState.modalIsOpen, modalNeighbors: images };
       });
     } else {
       this.setState(prevState => {
-        return { modalIsOpen: !prevState.modalIsOpen, modalImages: null };
+        return { modalIsOpen: !prevState.modalIsOpen, modalNeighbors: null };
       });
     }
   };
 
   changeNeighbors = id => {
     const images = this.getNeighbors(id);
-    this.setState({ modalImages: images });
+    this.setState({ modalNeighbors: images });
   };
 
   getNeighbors = id => {
@@ -55,7 +54,7 @@ class ImageGallery extends Component {
     return null;
   };
 
-  getResponse = async (query, page = this.state.page) => {
+  getResponse = async (query, page) => {
     const { key, imageType, orientation, perPage } = API_PARAMS;
     try {
       const response = await api.get(`/`, {
@@ -69,6 +68,7 @@ class ImageGallery extends Component {
         },
       });
       if (response.status === 200) {
+        console.log(response);
         return response;
       } else {
         throw new Error('Error - ' + response.status);
@@ -84,7 +84,6 @@ class ImageGallery extends Component {
       query: query,
       readyForResponse: readyForResponse,
       page: 1,
-      error: null,
       modalIsOpen: false,
     };
   };
@@ -95,13 +94,13 @@ class ImageGallery extends Component {
   componentDidUpdate = async (prevProps, prevState) => {
     const propsQuery = this.props.query;
     const doChangeStatus = this.props.changeStatus;
-    const { query, readyForResponse, page } = this.state;
-
+    const { query, readyForResponse } = this.state;
+    const page = propsQuery !== query ? 1 : this.state.page;
     //если новый запрос
     if (readyForResponse || propsQuery !== query) {
       doChangeStatus('pending');
       const perPage = API_PARAMS.perPage;
-      const newState = await this.getResponse(propsQuery)
+      const newState = await this.getResponse(propsQuery, page)
         .then(response => response.data)
         .then(({ total, hits, error }) => {
           if (total > 0) {
@@ -127,7 +126,6 @@ class ImageGallery extends Component {
               query: propsQuery,
               readyForResponse: false,
               page,
-              error: null,
             };
           }
           if (error) {
@@ -174,7 +172,7 @@ class ImageGallery extends Component {
         )}
         {this.state.modalIsOpen && (
           <Modal
-            modalImages={this.state.modalImages}
+            modalNeighbors={this.state.modalNeighbors}
             exitFunc={this.toggleModal}
             changeNeighbors={this.changeNeighbors}
           />

@@ -4,7 +4,7 @@ import { OverlayDiv, ModalDiv, ModalImg } from './Modal.styled';
 
 class Modal extends Component {
   onTapped = e => {
-    const { prev, next } = this.props.modalImages;
+    const { prev, next } = this.props.modalNeighbors;
     e.preventDefault();
     if (e.key === 'Escape') this.props.exitFunc();
     if (e.key === 'ArrowLeft') this.props.changeNeighbors(prev.id);
@@ -20,7 +20,7 @@ class Modal extends Component {
     if (e.target.nodeName === 'DIV') this.props.exitFunc();
   };
   render() {
-    const { curr } = this.props.modalImages;
+    const { curr } = this.props.modalNeighbors;
     return (
       <OverlayDiv onClick={this.onClickModal}>
         <ModalDiv>
@@ -34,7 +34,7 @@ class Modal extends Component {
 export default Modal;
 
 Modal.propTypes = {
-  modalImages: PropTypes.exact({
+  modalNeighbors: PropTypes.exact({
     curr: PropTypes.object.isRequired,
     prev: PropTypes.object.isRequired,
     next: PropTypes.object.isRequired,

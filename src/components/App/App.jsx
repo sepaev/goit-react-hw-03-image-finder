@@ -4,6 +4,7 @@ import Loader from '../Loader/Loader';
 import { AppSection, InfoDiv, InfoH1 } from './App.styled';
 import { Component } from 'react';
 import { toast } from 'react-toastify';
+import { TOAST_OPTIONS } from '../../constants/constants';
 
 class App extends Component {
   state = {
@@ -16,22 +17,12 @@ class App extends Component {
     this.setState({ status: 'resolved', query });
   };
 
-  toastOptions = {
-    position: 'top-right',
-    autoClose: 3000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-  };
-
   changeStatus = (newStatus, message = '') => {
     const { status, lastMessage } = this.state;
     if (status !== newStatus) {
       if (message !== '') {
         if (lastMessage !== message) {
-          toast.info(message, this.toastOptions);
+          toast.info(message, TOAST_OPTIONS);
         }
         this.setState({ status: newStatus, lastMessage: message });
       } else {

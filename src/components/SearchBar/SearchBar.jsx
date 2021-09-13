@@ -2,6 +2,7 @@ import { PropTypes } from 'prop-types';
 import { Component } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { TOAST_OPTIONS } from '../../constants/constants';
 import {
   SearchBarHeader,
   SearchForm,
@@ -15,15 +16,6 @@ class SearchBar extends Component {
     query: '',
   };
 
-  toastOptions = {
-    position: 'top-right',
-    autoClose: 3000,
-    hideProgressBar: true,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-  };
   handleQueryChange = e => {
     this.setState({ query: e.currentTarget.value.toLowerCase() });
   };
@@ -33,7 +25,7 @@ class SearchBar extends Component {
     const query = this.state.query.trim();
 
     if (!query) {
-      toast.error(`Please input search value.`, this.toastOptions);
+      toast.error(`Please input search value.`, TOAST_OPTIONS);
       return;
     }
     this.props.onSubmit(query);
