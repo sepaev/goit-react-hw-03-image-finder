@@ -1,5 +1,5 @@
-import SearchBar from '../SearchBar/SearchBar';
-import ImageGallery from '../ImageGallery/ImageGallery';
+import SearchBar from '../SearchBar';
+import ImageGallery from '../ImageGallery';
 import Loader from '../Loader/Loader';
 import { AppSection, InfoDiv, InfoH1 } from './App.styled';
 import { Component } from 'react';

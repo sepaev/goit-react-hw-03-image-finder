@@ -3,9 +3,9 @@ import { Component } from 'react';
 import { ImageGalleryUl } from './ImageGallery.styled';
 import { v4 as uuidv4 } from 'uuid';
 import { api, perPage } from '../../services/api';
-import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem';
-import Modal from '../Modal/Modal';
-import Button from '../Button/Button';
+import ImageGalleryItem from '../ImageGalleryItem';
+import Modal from '../Modal';
+import Button from '../Button';
 import 'react-toastify/dist/ReactToastify.css';
 
 class ImageGallery extends Component {
